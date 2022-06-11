@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+    <h1>{% block title %} Окно прогнозирования {% endblock %}</h1>
+
+    <form action="" method="post">
+    <div class="row">
+        <div class="col-xs-6">
+            <div class="input-group">
+              <span class="input-group-addon">Номер наблюдения</span>
+              <input type="number" class="form-control" step="any" name="number_observ"/>
+            </div>
+        </div>
+    </div>
+    <button type="submit" name="submit_button" value="submit" class="btn btn-primary">Выбрать</button>
+    {% if forecast %}
+        <h6> Ожидаемое время события: {{ predict_time }}</h6>
+        <img src="{{survival}}">
+        <img src="{{hazard}}">
+    {% endif %}
+    </form>
+{% endblock %}
