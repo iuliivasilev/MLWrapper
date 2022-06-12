@@ -1,9 +1,10 @@
 import pandas as pd
 from flask import Flask, render_template, request, session, redirect
+from waitress import serve
 
-from time import strftime
+import datetime
 import os
-import random, string
+import random
 import datasets
 import forecast
 import matplotlib.pyplot as plt
@@ -13,22 +14,19 @@ app = Flask(__name__, static_url_path='/static')
 app.secret_key = "test"
 
 
-def randomword(length):
-   letters = string.ascii_lowercase
-   return ''.join(random.choice(letters) for i in range(length))
-
-
-def save_function(func):
-    plt.figure() #strftime("%m%d%Y_%H%M%S")
-    name_file = randomword(10) + '.png'
-    path_file = os.path.join(os.path.dirname(__file__), "static", name_file).replace('/', '\\')
-    shared_path = os.path.join("\\static", name_file).replace('/', '\\')
+def save_function(func, name=""):
+    plt.figure()
+    img_name = datetime.datetime.now().strftime("%Y%m%d_%H%M%S_%f") + '.png'
+    img_path = os.path.join(os.path.dirname(__file__), "static", img_name).replace('/', '\\')
+    relative_path = os.path.join("\\static", img_name).replace('/', '\\')
     for fn in func:
         plt.step(fn.x, fn(fn.x), where="post")
 
     plt.ylim(0, 1)
-    plt.savefig(path_file, format='png')
-    return shared_path
+    plt.title(name)
+    plt.savefig(img_path, format='png')
+    return relative_path
+
 
 @app.route('/', methods=['post', 'get'])
 def main_form():
@@ -50,7 +48,6 @@ def select_form():
             session['X'] = X_path
             session['y'] = y_path
             session['model'] = model_path
-        print(session)
     return render_template("SelectForm.html", **kwargs)
 
 
@@ -62,35 +59,21 @@ def forecast_form():
     if request.method == 'POST':
         if request.form['submit_button'] == 'submit':
             number = request.form.get('number_observ')
-            print(number)
             X = pd.read_csv(session['X'])
             y = pd.read_csv(session['y'])
             model = datasets.load_pickle(session['model'])
             X = X.iloc[[int(number)], :]
+            y = y.iloc[int(number), :]
 
             kwargs['forecast'] = True
-            kwargs['predict_time'] = -1*model.predict(X)
-            kwargs['survival'] = save_function(model.predict_survival_function(X))
-            kwargs['hazard'] = save_function(model.predict_cumulative_hazard_function(X))
+            kwargs['outcome'] = y['cens']
+            kwargs['true_time'] = y['time']
+            # kwargs['predict_time'] = -1*model.predict(X)
+            kwargs['survival'] = save_function(model.predict_survival_function(X), "Survival")
+            kwargs['hazard'] = save_function(model.predict_cumulative_hazard_function(X), "Hazard")
             print(kwargs)
     return render_template("ForecastForm.html", **kwargs)
 
 
-# class MainForm(MethodView):
-#
-#     def __init__(self):
-#         session['a'] = random.randint(1, 10)
-#         print("HI")
-#
-#     def get(self):
-#         print(session['a'])
-#         return render_template("MainForm.html")
-#
-#     def post(self):
-#         print(session['a'])
-#         return request.form
-#
-# app.add_url_rule('/', view_func = MainForm.as_view('main_form'))
-
 if __name__ == '__main__':
-    app.run()
+    serve(app, host=domain, port=5000, threads=4, connection_limit=300)

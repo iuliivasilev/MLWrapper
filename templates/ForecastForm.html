@@ -15,9 +15,10 @@
     </div>
     <button type="submit" name="submit_button" value="submit" class="btn btn-primary">Выбрать</button>
     {% if forecast %}
-        <h6> Ожидаемое время события: {{ predict_time }}</h6>
-        <img src="{{survival}}">
-        <img src="{{hazard}}">
+        <h6> Исход: {{ outcome }}</h6>
+        <h6> Настоящее время события: {{ true_time }}</h6>
+        <img src="{{survival}}" width="40%" float="left">
+        <img src="{{hazard}}" width="40%" float="left">
     {% endif %}
     </form>
 {% endblock %}
