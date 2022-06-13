@@ -1,13 +1,9 @@
 import pandas as pd
 import numpy as np
-import math
-import re
 import os
-import sys
 
 import datasets
 
-from scipy import stats
 from sksurv.linear_model import CoxPHSurvivalAnalysis
 
 dict_ds = {
@@ -35,7 +31,3 @@ def create_model(dataset_name = "PBC", model_name = "CoxPH"):
     X.to_csv(X_path, index=False)
     pd.DataFrame(y).to_csv(y_path, index=False)
     return X_path, y_path, model_path
-
-if __name__ == '__main__':
-    pass
-    # create_model("GBSG", "CoxPH")
