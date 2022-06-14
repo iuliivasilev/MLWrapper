@@ -28,8 +28,24 @@ def save_function(func, name=""):
     return relative_path
 
 
+def save_path_by_names():
+    X_path, y_path, model_path = forecast.create_model(dataset_name=session['dataset_name'],
+                                                       model_name=session['model_name'])
+    session['X_path'] = X_path
+    session['y_path'] = y_path
+    session['model_path'] = model_path
+    return
+
+
+def init_session():
+    session['dataset_name'] = 'PBC'
+    session['model_name'] = 'CoxPH'
+    return
+
+
 @app.route('/', methods=['post', 'get'])
 def main_form():
+    init_session()
     return render_template("MainForm.html")
 
 
@@ -43,11 +59,9 @@ def select_form():
     }
     if request.method == 'POST':
         if request.form['submit_button'] == 'submit':
-            X_path, y_path, model_path = forecast.create_model(dataset_name=request.form.get('datasets'),
-                                                               model_name=request.form.get('models'))
-            session['X'] = X_path
-            session['y'] = y_path
-            session['model'] = model_path
+            session['dataset_name'] = request.form.get('datasets')
+            session['model_name'] = request.form.get('models')
+            save_path_by_names()
     return render_template("SelectForm.html", **kwargs)
 
 
@@ -58,10 +72,12 @@ def forecast_form():
     }
     if request.method == 'POST':
         if request.form['submit_button'] == 'submit':
+            if not('model_path' in session):
+                save_path_by_names()
             number = request.form.get('number_observ')
-            X = pd.read_csv(session['X'])
-            y = pd.read_csv(session['y'])
-            model = datasets.load_pickle(session['model'])
+            X = pd.read_csv(session['X_path'])
+            y = pd.read_csv(session['y_path'])
+            model = datasets.load_pickle(session['model_path'])
             X = X.iloc[[int(number)], :]
             y = y.iloc[int(number), :]
 
