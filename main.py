@@ -14,15 +14,22 @@ app = Flask(__name__, static_url_path='/static')
 app.secret_key = "test"
 
 
-def save_function(func, name=""):
+def save_image(bins, values, name="", true_time=None):
     plt.figure()
     img_name = datetime.datetime.now().strftime("%Y%m%d_%H%M%S_%f") + '.png'
     img_path = os.path.join(os.path.dirname(__file__), "static", img_name).replace('/', '\\')
     relative_path = os.path.join("\\static", img_name).replace('/', '\\')
-    for fn in func:
-        plt.step(fn.x, fn(fn.x), where="post")
+    plt.step(bins, values, where="post", label='Predict')
+    if not(true_time is None):
+        plt.hlines(1.0, 0, true_time, color='r')
+        plt.hlines(0.0, true_time, max(bins), color='r')
+        plt.vlines(true_time, 0, 1,
+                  color='r',
+                  linewidth=2,
+                  label="True")
+        plt.legend()
 
-    plt.ylim(0, 1)
+    plt.ylim(-0.01, 1.01)
     plt.title(name)
     plt.savefig(img_path, format='png')
     return relative_path
@@ -85,8 +92,10 @@ def forecast_form():
             kwargs['outcome'] = y['cens']
             kwargs['true_time'] = y['time']
             # kwargs['predict_time'] = -1*model.predict(X)
-            kwargs['survival'] = save_function(model.predict_survival_function(X), "Survival")
-            kwargs['hazard'] = save_function(model.predict_cumulative_hazard_function(X), "Hazard")
+            s_func = model.predict_survival_function(X)[0]
+            kwargs['survival'] = save_image(s_func.x, s_func(s_func.x), "Survival", y['time'])
+            h_func = model.predict_cumulative_hazard_function(X)[0]
+            kwargs['hazard'] = save_image(h_func.x, h_func(h_func.x), "Hazard")
             print(kwargs)
     return render_template("ForecastForm.html", **kwargs)
 
