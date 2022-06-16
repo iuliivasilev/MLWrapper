@@ -60,8 +60,8 @@ def main_form():
 def select_form():
     kwargs = {
         'params':{
-                  'models': ['CoxPH', 'KaplanMeier'],
-                  'datasets': ['PBC', 'GBSG']
+                  'models': list(forecast.dict_models.keys()),
+                  'datasets': list(forecast.dict_ds.keys())
         }
     }
     if request.method == 'POST':
