@@ -4,7 +4,7 @@
 
     <h1>{% block title %} Окно выбора набора данных и модели {% endblock %}</h1>
 
-    <form action={{ url_for('select_form') }} method="post">
+    <form action={{ url_for('settings_form') }} method="post">
 
     <div class='container mb-5'>
         {% for name, values in params.items() %}
@@ -13,7 +13,7 @@
                 <span class="input-group-addon">{{name}}</span>
                 <select name= "{{name}}" id="id{{name}}" action="/" class="form-control"/>
                     {% for v in values %}
-                        <option value= "{{v}}">{{v}}</option>"
+                        <option value= "{{v}}" {% if session[name] == v %} selected {% endif%} >{{v}}</option>"
                     {% endfor %}
                 </select>
         </div></div></div>

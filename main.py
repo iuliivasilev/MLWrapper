@@ -57,19 +57,25 @@ def main_form():
 
 
 @app.route('/select', methods=['post', 'get'])
-def select_form():
-    kwargs = {
-        'params':{
-                  'models': list(forecast.dict_models.keys()),
-                  'datasets': list(forecast.dict_ds.keys())
+def settings_form():
+    def get_settings_kwargs():
+        kwargs = {
+            'params': {
+                'models': list(forecast.dict_models.keys()),
+                'datasets': list(forecast.dict_ds.keys())
+            },
+            'session': {
+                'models': session['model_name'],
+                'datasets': session['dataset_name']
+            }
         }
-    }
+        return kwargs
     if request.method == 'POST':
         if request.form['submit_button'] == 'submit':
-            session['dataset_name'] = request.form.get('datasets')
             session['model_name'] = request.form.get('models')
+            session['dataset_name'] = request.form.get('datasets')
             save_path_by_names()
-    return render_template("SelectForm.html", **kwargs)
+    return render_template("SettingsForm.html", **get_settings_kwargs())
 
 
 @app.route('/forecast', methods=['post', 'get'])
@@ -81,7 +87,7 @@ def forecast_form():
         if request.form['submit_button'] == 'submit':
             if not('model_path' in session):
                 save_path_by_names()
-            number = request.form.get('number_observ')
+            number = request.form.get('observ_number')
             X = pd.read_csv(session['X_path'])
             y = pd.read_csv(session['y_path'])
             model = forecast.load_pickle(session['model_path'])
