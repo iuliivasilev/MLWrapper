@@ -5,7 +5,7 @@ from waitress import serve
 import datetime
 import os
 import random
-import datasets
+# import datasets
 import forecast
 import matplotlib.pyplot as plt
 
@@ -84,7 +84,7 @@ def forecast_form():
             number = request.form.get('number_observ')
             X = pd.read_csv(session['X_path'])
             y = pd.read_csv(session['y_path'])
-            model = datasets.load_pickle(session['model_path'])
+            model = forecast.load_pickle(session['model_path'])
             X = X.iloc[[int(number)], :]
             y = y.iloc[int(number), :]
 

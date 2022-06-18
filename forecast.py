@@ -1,8 +1,9 @@
 import pandas as pd
 import numpy as np
 import os
+import pickle
 
-import datasets
+import survivors.datasets as datasets
 
 from sksurv.linear_model import CoxPHSurvivalAnalysis
 from sksurv.tree import SurvivalTree
@@ -23,6 +24,15 @@ dict_models = {
 }
 
 
+def save_pickle(obj, path):
+    file_pi = open(path, 'wb')
+    pickle.dump(obj, file_pi, pickle.HIGHEST_PROTOCOL)
+
+
+def load_pickle(path):
+    return pickle.load(open(path, 'rb'))
+
+
 def create_model(dataset_name="PBC", model_name="CoxPH"):
     if dataset_name in dict_ds:
         ds = dict_ds[dataset_name]()
@@ -37,7 +47,7 @@ def create_model(dataset_name="PBC", model_name="CoxPH"):
     y_path = os.path.join(dir_path, dataset_name + '_y.csv')
     if not os.path.exists(dir_path):
         os.makedirs(dir_path)
-    datasets.save_pickle(model, model_path)
+    save_pickle(model, model_path)
     X.to_csv(X_path, index=False)
     pd.DataFrame(y).to_csv(y_path, index=False)
     return X_path, y_path, model_path
